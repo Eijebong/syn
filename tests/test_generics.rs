@@ -21,8 +21,7 @@ fn test_split_for_impl() {
         ty_params: vec![TyParam {
                             attrs: vec![Attribute {
                                             style: AttrStyle::Outer,
-                                            path: "may_dangle".into(),
-                                            tts: vec![],
+                                            value: MetaItem::Word("may_dangle".into()),
                                             is_sugared_doc: false,
                                         }],
                             ident: Ident::new("T"),
