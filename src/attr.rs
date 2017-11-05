@@ -47,10 +47,6 @@ pub enum MetaItem {
     ///
     /// E.g. `feature = "foo"` as in `#[feature = "foo"]`
     NameValue(Ident, Lit),
-    /// Tokens meta item.
-    ///
-    /// E.g. `test foo bar` as in `#[test foo bar]`
-    Tokens(Ident, Vec<TokenTree>),
 }
 
 impl MetaItem {
@@ -62,8 +58,7 @@ impl MetaItem {
         match *self {
             MetaItem::Word(ref name) |
             MetaItem::List(ref name, _) |
-            MetaItem::NameValue(ref name, _) |
-            MetaItem::Tokens(ref name, _) => name.as_ref(),
+            MetaItem::NameValue(ref name, _) => name.as_ref(),
         }
     }
 }
@@ -116,7 +111,6 @@ pub mod parsing {
     use super::*;
     use ident::parsing::ident;
     use lit::parsing::lit;
-    use mac::parsing::token_trees;
     use synom::space::{block_comment, whitespace};
     use ty::parsing::mod_style_path;
 
@@ -172,25 +166,6 @@ pub mod parsing {
             (Attribute {
                 style: AttrStyle::Outer,
                 value: meta_item,
-                is_sugared_doc: false,
-            })
-        )
-        |
-        do_parse!(
-            name_and_token_trees: preceded!(
-                punct!("#"),
-                delimited!(
-                    punct!("["),
-                    tuple!(ident, token_trees),
-                    punct!("]")
-                )
-            ) >>
-            (Attribute {
-                style: AttrStyle::Outer,
-                value: {
-                    let (name, token_trees) = name_and_token_trees;
-                    MetaItem::Tokens(name, token_trees)
-                },
                 is_sugared_doc: false,
             })
         )
@@ -313,10 +288,6 @@ mod printing {
                     name.to_tokens(tokens);
                     tokens.append("=");
                     value.to_tokens(tokens);
-                }
-                MetaItem::Tokens(ref name, ref token_trees) => {
-                    name.to_tokens(tokens);
-                    tokens.append_all(token_trees);
                 }
             }
         }
